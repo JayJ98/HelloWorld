@@ -3,6 +3,7 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
+    addAndMakeVisible(toggleButton);
     setSize (600, 400);
 }
 
