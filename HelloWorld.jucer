@@ -19,7 +19,7 @@
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-Wl,-weak_reference_mismatches,weak&#10;-Wl,-ld_classic">
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraLinkerFlags="-Wl,-weak_reference_mismatches,weak&#10;-Wl,-ld_classic">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="HelloWorld"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="HelloWorld"/>
