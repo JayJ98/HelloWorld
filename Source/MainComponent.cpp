@@ -6,7 +6,11 @@ MainComponent::MainComponent()
 {
     addAndMakeVisible(comp);
     comp.addMouseListener(this, false);
-    setSize (800, 600);
+    
+    addAndMakeVisible(ownedArrayComp);
+
+    
+    setSize (600, 400);
 }
 
 MainComponent::~MainComponent()
@@ -30,5 +34,11 @@ void MainComponent::resized()
     // This is called when the MainComponent is resized.
     // If you add any child components, this is where you should
     // update their positions.
-    comp.setBounds(30, 30, 200, 200);
+    comp.setBounds(30, 30, 100, 100);
+    
+    ownedArrayComp.setBounds(comp.getX(),
+                             comp.getBottom() + 5,
+                             getWidth() - comp.getX() ,
+                             getHeight() -  comp.getBottom());
+    
 }
