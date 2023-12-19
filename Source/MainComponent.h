@@ -2,20 +2,42 @@
 
 #include <JuceHeader.h>
 
-struct Car
+using namespace juce;
+
+struct MyComp : Component
 {
-    struct CarSeat{
-        bool seatIsLeather;
-    };
+//    void resized() override {}
+    void paint(Graphics& g) override { g.fillAll(juce::Colours::darkorange); }
+    void mouseEnter(const MouseEvent& e) override
+    {
+        DBG("MyComp Mouse enter!");
+    }
+    void mouseExit(const MouseEvent& e) override
+    {
+        DBG("MyComp Mouse exit!");
+    }
     
-    int numberOfWheels;
-    bool convertable;
-    CarSeat driversSeat;
-    CarSeat navigatorSeat;
+    void mouseDown(const MouseEvent& e) override
+    {
+        DBG("MyComp Mouse down!");
+    }
     
-    bool switchSeats(CarSeat oldSeat, CarSeat newSeat);
+    void mouseUp(const MouseEvent& e) override
+    {
+        DBG("MyComp Mouse up!");
+    }
     
-    void accelerate(float howFarToPushPedal);
+    void mouseDrag(const MouseEvent& e) override
+    {
+        DBG("MyComp Mouse drag at x: " << e.x << " y: " << e.y);
+    }
+    void mouseMove(const MouseEvent& e) override
+    {
+        DBG("MyComp mouse moved: " << counter);
+        counter++;
+    }
+private:
+    int counter = 0;
 };
 //==============================================================================
 /*
@@ -33,10 +55,26 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    void mouseEnter(const MouseEvent& e) override
+    {
+        DBG("Main component mouse enter!");
+    }
+    
+    void mouseExit(const MouseEvent& e) override
+    {
+        DBG("Main component mouse exit!");
+    }
+    
+    void mouseMove(const MouseEvent& e) override
+    {
+        DBG("MainComponent mouse moved: " << counter);
+        counter += 100;
+    }
 private:
     //==============================================================================
     // Your private member variables go here...
-    juce::ToggleButton toggleButton;
-
+    
+    MyComp comp;
+    int counter = 0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
