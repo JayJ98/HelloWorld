@@ -17,31 +17,14 @@ struct Widget : public Component
     int num = 0;
 };
 
-struct OwnedArrayComponent : Component
+struct OwnedArrayComponent : Component, Button::Listener
 {
-    OwnedArrayComponent()
-    {
-        for (int i = 0; i < 10; ++i) {
-            auto* widget = widgets.add( new Widget(i) );
-            addAndMakeVisible(widget);
-        }
-    }
-    
-    void resized() override
-    {
-        auto width = getWidth() / static_cast<float>(widgets.size());
-        DBG("Width: " << width);
-        int x = 0;
-        auto h = getHeight();
-        for (auto* widget : widgets) {
-            widget->setBounds(x, 0, width, h);
-            x += width;
-        }
-
-    }
-    
-    
-    OwnedArray<Widget> widgets;
+    OwnedArrayComponent();
+    ~OwnedArrayComponent();
+    void resized() override;
+    void buttonClicked(Button* buttonThatWasClicked) override;
+private:
+    OwnedArray<TextButton> buttons;
 };
 
 struct MyComp : Component
@@ -50,34 +33,34 @@ struct MyComp : Component
     void paint(Graphics& g) override { g.fillAll(juce::Colours::darkorange); }
     void mouseEnter(const MouseEvent& e) override
     {
-        DBG("MyComp Mouse enter!");
+//        DBG("MyComp Mouse enter!");
     }
     void mouseExit(const MouseEvent& e) override
     {
-        DBG("MyComp Mouse exit!");
+//        DBG("MyComp Mouse exit!");
     }
     
     void mouseDown(const MouseEvent& e) override
     {
-        DBG("MyComp Mouse down!");
+//        DBG("MyComp Mouse down!");
     }
     
     void mouseUp(const MouseEvent& e) override
     {
-        DBG("MyComp Mouse up!");
+//        DBG("MyComp Mouse up!");
     }
     
     void mouseDrag(const MouseEvent& e) override
     {
-        DBG("MyComp Mouse drag at x: " << e.x << " y: " << e.y);
+//        DBG("MyComp Mouse drag at x: " << e.x << " y: " << e.y);
     }
     void mouseMove(const MouseEvent& e) override
     {
-        DBG("MyComp mouse moved: " << counter);
-        counter++;
+//        DBG("MyComp mouse moved: " << counter);
+//        counter++;
     }
 private:
-    int counter = 0;
+//    int counter = 0;
 };
 //==============================================================================
 /*
@@ -108,7 +91,7 @@ public:
     void mouseMove(const MouseEvent& e) override
     {
         DBG("MainComponent mouse moved: " << counter);
-        counter += 100;
+        counter += 1;
     }
 private:
     //==============================================================================
