@@ -1,6 +1,40 @@
 #include "MainComponent.h"
 using namespace juce;
 
+
+DualButton::DualButton()
+{
+    addAndMakeVisible(button1);
+    addAndMakeVisible(button2);
+    
+    button1.onClick = [this]()
+    {
+        DBG( "Button1's size: " << this->button1.getBounds().toString() );
+    };
+    
+    button2.onClick = [this]()
+    {
+        DBG( "Button2's size: " << this->button2.getBounds().toString() );
+    };
+}
+
+void DualButton::resized()
+{
+    auto bounds = getLocalBounds();
+    DBG(bounds.toString());
+    bounds = bounds.removeFromLeft(100);
+    DBG(bounds.toString());
+    button1.setBounds(bounds);
+
+    bounds = getLocalBounds().removeFromRight(100);
+    bounds.setX(bounds.getX() - 5);
+    
+    DBG(bounds.toString());
+    
+    button2.setBounds(bounds);
+}
+//==============================================================================
+
 OwnedArrayComponent::OwnedArrayComponent()
 {
     for (int i = 0; i < 10; ++i) {
@@ -19,7 +53,6 @@ OwnedArrayComponent::~OwnedArrayComponent()
 void OwnedArrayComponent::resized()
 {
     auto width = getWidth() / static_cast<float>(buttons.size());
-    DBG("Width: " << width);
     int x = 0;
     auto h = getHeight();
     for (auto* button : buttons) {
@@ -49,6 +82,7 @@ MainComponent::MainComponent()
     
     addAndMakeVisible(ownedArrayComp);
     ownedArrayComp.addMouseListener(this, true);
+    addAndMakeVisible(dualButton);
     
     setSize (600, 400);
 }
@@ -80,5 +114,7 @@ void MainComponent::resized()
                              comp.getBottom() + 5,
                              getWidth() -5,
                              getHeight() -  comp.getBottom() - 10);
+    
+    dualButton.setBounds(comp.getBounds().withX(comp.getRight()+5).withWidth(210));
     
 }

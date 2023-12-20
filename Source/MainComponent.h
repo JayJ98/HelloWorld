@@ -3,6 +3,14 @@
 #include <JuceHeader.h>
 using namespace juce;
 
+struct DualButton : public Component
+{
+    DualButton();
+    void resized() override;
+private:
+    TextButton button1 {"button1"}, button2 {"button2"};
+};
+
 struct Widget : public Component
 {
     Widget(int i) : num(i) {}
@@ -80,23 +88,23 @@ public:
 
     void mouseEnter(const MouseEvent& e) override
     {
-        DBG("Main component mouse enter!");
+        /*DBG*/("Main component mouse enter!");
     }
     
     void mouseExit(const MouseEvent& e) override
     {
-        DBG("Main component mouse exit!");
+//        DBG("Main component mouse exit!");
     }
     
     void mouseMove(const MouseEvent& e) override
     {
-        DBG("MainComponent mouse moved: " << counter);
-        counter += 1;
+//        DBG("MainComponent mouse moved: " << counter);
+//        counter += 1;
     }
 private:
     //==============================================================================
     // Your private member variables go here...
-    
+    DualButton dualButton;
     MyComp comp;
     int counter = 0;
     OwnedArrayComponent ownedArrayComp;
