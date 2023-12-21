@@ -25,6 +25,28 @@ struct Widget : public Component
     int num = 0;
 };
 
+//==============================================================================
+
+struct RepeatingThing : Component, Timer
+{
+    void timerCallback()
+    {
+        drawRed = !drawRed;
+        repaint();
+    }
+    void paint(Graphics& g)
+    {
+        g.fillAll( drawRed ? Colours::red : Colours::green );
+    }
+    
+    RepeatingThing() { startTimerHz(2); }
+    ~RepeatingThing() { stopTimer(); }
+    
+private:
+    bool drawRed = true;
+};
+//==============================================================================
+
 struct OwnedArrayComponent : Component, Button::Listener
 {
     OwnedArrayComponent();
@@ -108,5 +130,7 @@ private:
     MyComp comp;
     int counter = 0;
     OwnedArrayComponent ownedArrayComp;
+    RepeatingThing repeatingThing;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

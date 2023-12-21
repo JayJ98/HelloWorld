@@ -84,6 +84,8 @@ MainComponent::MainComponent()
     ownedArrayComp.addMouseListener(this, true);
     addAndMakeVisible(dualButton);
     
+    addAndMakeVisible(repeatingThing);
+    
     setSize (600, 400);
 }
 
@@ -116,5 +118,7 @@ void MainComponent::resized()
                              getHeight() -  comp.getBottom() - 10);
     
     dualButton.setBounds(comp.getBounds().withX(comp.getRight()+5).withWidth(210));
-    
+
+    repeatingThing.setBounds(dualButton.getBounds().withX(dualButton.getRight() + 5) );
+                             
 }
