@@ -3,11 +3,17 @@
 #include <JuceHeader.h>
 using namespace juce;
 
+//struct RepeatingThing;
+
 struct DualButton : public Component
 {
     DualButton();
     void resized() override;
+    
+    void setButton1Handler(std::function<void()> f);
+    void setButton2Handler(std::function<void()> f);
 private:
+//    RepeatingThing& timerThing;
     TextButton button1 {"button1"}, button2 {"button2"};
 };
 
@@ -39,7 +45,7 @@ struct RepeatingThing : Component, Timer
         g.fillAll( drawRed ? Colours::red : Colours::green );
     }
     
-    RepeatingThing() { startTimerHz(2); }
+    RepeatingThing() { startTimer(800); }
     ~RepeatingThing() { stopTimer(); }
     
 private:
@@ -126,11 +132,11 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
-    DualButton dualButton;
+    RepeatingThing repeatingThing;
+    DualButton dualButton; //{repeatingThing};
     MyComp comp;
     int counter = 0;
     OwnedArrayComponent ownedArrayComp;
-    RepeatingThing repeatingThing;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
