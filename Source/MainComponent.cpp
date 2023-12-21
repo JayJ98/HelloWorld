@@ -20,6 +20,120 @@ DualButton::DualButton()
 //    };
 }
 
+ImageProcessingThread::ImageProcessingThread(int w_, int h_) : Thread("ImageProcessingThread"), w(w_), h(h_)
+{
+    startThread();
+}
+ImageProcessingThread::~ImageProcessingThread()
+{
+    stopThread(500);
+}
+void ImageProcessingThread::run()
+{
+    while( true )
+    {
+        if( threadShouldExit() ) { break; }
+        
+        auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
+        
+        if( threadShouldExit() ) { break; }
+        
+        if( threadShouldExit() ) { break; }
+        
+        DBG("[ImageProcessingThread] generating random image " << Time::getCurrentTime().toISO8601(true));
+        
+        bool shouldBail = false;
+        for (int x = 0; x < w; ++x) {
+            if( threadShouldExit() )
+            {
+                shouldBail = true;
+                break;
+            }
+            for (int y = 0; y < h; ++y)
+            {
+                canvas.setPixelAt(x,
+                                  y,
+                                  Colour(
+                                         r.nextInt(),
+                                         r.nextFloat(),
+                                         r.nextFloat(),
+                                         1.f ) );
+            }
+        }
+        
+        if( threadShouldExit() || shouldBail) { break; }
+        
+        if( updateRenderer)
+        {
+            updateRenderer( std::move(canvas) );
+        }
+        wait( -1 );
+    }
+}
+
+void ImageProcessingThread::setUpdateRendererFunc( std::function<void(Image&&)> f )
+{
+    updateRenderer = std::move(f);
+}
+
+//=======================================================================================
+
+LambdaTimer::LambdaTimer(int ms, std::function<void()> f) : lambda( std::move(f) )
+{
+    startTimer(ms);
+}
+
+LambdaTimer::~LambdaTimer()
+{
+    stopTimer();
+}
+
+void LambdaTimer::timerCallback()
+{
+    stopTimer();
+    if( lambda )
+        lambda();
+}
+
+Renderer::Renderer()
+{
+    lamdaTimer = std::make_unique<LambdaTimer>(10, [this]()
+    {
+        processingThread = std::make_unique<ImageProcessingThread>(getWidth(),
+                                                    getHeight());
+        processingThread->setUpdateRendererFunc([this](Image&& image)
+                                               {
+            int renderIndex = firstImage ? 0 : 1;
+            firstImage = !firstImage;
+            imageToRender[renderIndex] = std::move(image);
+            
+            triggerAsyncUpdate();
+            lamdaTimer = std::make_unique<LambdaTimer>(1000, [this](){
+                processingThread->notify();
+            });
+        });
+    });
+}
+
+Renderer::~Renderer()
+{
+    processingThread.reset();
+    lamdaTimer.reset();
+}
+
+void Renderer::paint(Graphics& g)
+{
+    DBG("[Renderer] painting: " << Time::getCurrentTime().toISO8601(true) << "\n");
+    g.drawImage(firstImage ? imageToRender[0] : imageToRender[1], getLocalBounds().toFloat());
+}
+
+void Renderer::handleAsyncUpdate()
+{
+    repaint();
+}
+//=======================================================================================
+
+
 void DualButton::resized()
 {
     auto bounds = getLocalBounds();
@@ -63,27 +177,19 @@ OwnedArrayComponent::~OwnedArrayComponent()
 }
 void OwnedArrayComponent::resized()
 {
-    auto width = getWidth() / static_cast<float>(buttons.size());
+    auto width = ( (getWidth() - (buttons.size() * 3)) / static_cast<float>(buttons.size()) );
     int x = 0;
     auto h = getHeight();
     for (auto* button : buttons) {
         button->setBounds(x, 0, width, h);
-        x += width;
+        x += width + 3;
     }
 
 }
 
 void OwnedArrayComponent::buttonClicked(Button* buttonThatWasClicked)
 {
-    DBG("Something was clicked");
-    if( buttonThatWasClicked == buttons.getFirst() )
-    {
-        DBG("The first button was clicked!");
-    }
-    else if( buttonThatWasClicked == buttons.getLast() )
-    {
-        DBG("The last button was clicked!");
-    }
+    DBG("Button " << buttonThatWasClicked->getButtonText() << " was clicked!");  
 }
 //==============================================================================
 MainComponent::MainComponent()
@@ -113,7 +219,9 @@ MainComponent::MainComponent()
     addAndMakeVisible(repeatingThing);
     addAndMakeVisible(hiResGui);
     
-    setSize (600, 400);
+    addAndMakeVisible(renderer);
+    
+    setSize (800, 400);
 }
 
 MainComponent::~MainComponent()
@@ -128,7 +236,7 @@ void MainComponent::paint (juce::Graphics& g)
 
     g.setFont (Font (36.0f));
     g.setColour (Colours::white);
-    g.drawText ("Hello World!", getLocalBounds(), juce::Justification::centred, true);
+//    g.drawText ("Hello World!", getLocalBounds(), juce::Justification::centred, true);
     
 }
 
@@ -149,5 +257,7 @@ void MainComponent::resized()
     repeatingThing.setBounds(dualButton.getBounds().withX(dualButton.getRight() + 5).withWidth(100) );
     
     hiResGui.setBounds(repeatingThing.getBounds().withX(repeatingThing.getRight() + 5).withWidth(100) );
+    
+    renderer.setBounds(hiResGui.getBounds().withX(hiResGui.getRight() + 5).withWidth(100) );
                              
 }

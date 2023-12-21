@@ -5,6 +5,52 @@ using namespace juce;
 
 //struct RepeatingThing;
 
+//====================================================
+struct ImageProcessingThread : Thread
+{
+    ImageProcessingThread(int w_, int h_);
+    ~ImageProcessingThread();
+    void run() override;
+    
+    void setUpdateRendererFunc( std::function<void(Image&&)> f );
+    
+private:
+    int w {0};
+    int h {0};
+    std::function<void(Image&&)> updateRenderer;
+    Random r;
+    
+};
+
+//====================================================
+
+struct LambdaTimer : Timer
+{
+    LambdaTimer(int ms, std::function<void()> f);
+    ~LambdaTimer();
+    void timerCallback() override;
+private:
+    std::function<void()> lambda;
+};
+#include <array>
+
+struct Renderer : Component, AsyncUpdater
+{
+    Renderer();
+    ~Renderer();
+    void paint(Graphics& g) override;
+    void handleAsyncUpdate() override;
+private:
+    std::unique_ptr<ImageProcessingThread> processingThread;
+    std::unique_ptr<LambdaTimer> lamdaTimer;
+    bool firstImage = true;
+    std::array<Image, 2> imageToRender;
+};
+
+//====================================================
+
+
+
 struct DualButton : public Component
 {
     DualButton();
@@ -159,7 +205,7 @@ public:
 
     void mouseEnter(const MouseEvent& e) override
     {
-        /*DBG*/("Main component mouse enter!");
+//        DBG("Main component mouse enter!");
     }
     
     void mouseExit(const MouseEvent& e) override
@@ -180,8 +226,8 @@ private:
     OwnedArrayComponent ownedArrayComp;
     RepeatingThing repeatingThing;
     DualButton dualButton; //{repeatingThing};
-
     MyAsyncHighResGui hiResGui;
+    Renderer renderer;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
