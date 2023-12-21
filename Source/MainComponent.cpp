@@ -111,6 +111,7 @@ MainComponent::MainComponent()
                                  );
     
     addAndMakeVisible(repeatingThing);
+    addAndMakeVisible(hiResGui);
     
     setSize (600, 400);
 }
@@ -145,6 +146,8 @@ void MainComponent::resized()
     
     dualButton.setBounds(comp.getBounds().withX(comp.getRight()+5).withWidth(210));
 
-    repeatingThing.setBounds(dualButton.getBounds().withX(dualButton.getRight() + 5) );
+    repeatingThing.setBounds(dualButton.getBounds().withX(dualButton.getRight() + 5).withWidth(100) );
+    
+    hiResGui.setBounds(repeatingThing.getBounds().withX(repeatingThing.getRight() + 5).withWidth(100) );
                              
 }
