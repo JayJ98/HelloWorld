@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 using namespace juce;
+#include "DataRace.h"
 
 //struct RepeatingThing;
 
@@ -227,7 +228,8 @@ private:
     RepeatingThing repeatingThing;
     DualButton dualButton; //{repeatingThing};
     MyAsyncHighResGui hiResGui;
-    Renderer renderer;
+//    Renderer renderer;
     
+    Test test;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -4,6 +4,8 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" defines="JUCE_SILENCE_XCODE_15_LINKER_WARNING">
   <MAINGROUP id="ilhA1Y" name="HelloWorld">
     <GROUP id="{9ED17EA7-E133-BC38-55E8-2111F8936650}" name="Source">
+      <FILE id="N9YHyE" name="DataRace.cpp" compile="1" resource="0" file="Source/DataRace.cpp"/>
+      <FILE id="zR6PfR" name="DataRace.h" compile="0" resource="0" file="Source/DataRace.h"/>
       <FILE id="i9NUr1" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="eGUGkr" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="vJ8Xvy" name="MainComponent.cpp" compile="1" resource="0"
