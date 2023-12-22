@@ -52,3 +52,12 @@ struct Test
     
 };
 
+
+//===========================================================================
+struct LockingStuct
+{
+    void threadAFunc();
+    void threadBFunc();
+    int dataMember = 0;
+    CriticalSection criticalSection;
+};

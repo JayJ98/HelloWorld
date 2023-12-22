@@ -20,7 +20,7 @@ DualButton::DualButton()
 //    };
 }
 
-ImageProcessingThread::ImageProcessingThread(int w_, int h_) : Thread("ImageProcessingThread"), w(w_), h(h_)
+ImageProcessingThread::ImageProcessingThread(int w_, int h_, ImagePassingFunc f) : Thread("ImageProcessingThread"), w(w_), h(h_), updateRenderer( std::move(f) )
 {
     startThread();
 }
@@ -36,19 +36,21 @@ void ImageProcessingThread::run()
         
         auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
         
-        if( threadShouldExit() ) { break; }
+//        if( threadShouldExit() ) { break; }
         
-        if( threadShouldExit() ) { break; }
+//        if( threadShouldExit() ) { break; }
         
-        DBG("[ImageProcessingThread] generating random image " << Time::getCurrentTime().toISO8601(true));
+//        DBG("[ImageProcessingThread] generating random image " << Time::getCurrentTime().toISO8601(true));
         
-        bool shouldBail = false;
+//        bool shouldBail = false;
+        
         for (int x = 0; x < w; ++x) {
-            if( threadShouldExit() )
-            {
-                shouldBail = true;
-                break;
-            }
+//            if( threadShouldExit() )
+//            {
+//                shouldBail = true;
+//                break;
+//            }
+            
             for (int y = 0; y < h; ++y)
             {
                 canvas.setPixelAt(x,
@@ -61,20 +63,20 @@ void ImageProcessingThread::run()
             }
         }
         
-        if( threadShouldExit() || shouldBail) { break; }
+//        if( threadShouldExit() || shouldBail) { break; }
         
         if( updateRenderer)
         {
-            updateRenderer( std::move(canvas) );
+            updateRenderer( canvas, *this);
         }
         wait( -1 );
     }
 }
 
-void ImageProcessingThread::setUpdateRendererFunc( std::function<void(Image&&)> f )
-{
-    updateRenderer = std::move(f);
-}
+//void ImageProcessingThread::setUpdateRendererFunc( std::function<void(Image&&)> f )
+//{
+//    updateRenderer = std::move(f);
+//}
 
 //=======================================================================================
 
@@ -100,34 +102,43 @@ Renderer::Renderer()
     lamdaTimer = std::make_unique<LambdaTimer>(10, [this]()
     {
         processingThread = std::make_unique<ImageProcessingThread>(getWidth(),
-                                                    getHeight());
-        processingThread->setUpdateRendererFunc([this](Image&& image)
+                                            getHeight(),
+                                            [this](Image image,
+                                                   ImageProcessingThread& thread)
                                                {
-            int renderIndex = firstImage ? 0 : 1;
-            firstImage = !firstImage;
-            imageToRender[renderIndex] = std::move(image);
+//            bool whichIndex = firstImage.get();
+//            int renderIndex = whichIndex ? 0 : 1;
+//            firstImage = !whichIndex;
+//            imageToRender[renderIndex] = image;
+            imageToRender.push(image);
+//            triggerAsyncUpdate();
             
-            triggerAsyncUpdate();
-            lamdaTimer = std::make_unique<LambdaTimer>(1000, [this](){
-                processingThread->notify();
-            });
+            if( !thread.threadShouldExit() )
+            {
+                lamdaTimer = std::make_unique<LambdaTimer>(1000, [this](){
+                    processingThread->notify();
+                });
+            }
         });
     });
+    
+    startTimerHz(20);
 }
 
 Renderer::~Renderer()
 {
+    lamdaTimer.reset(nullptr);
     processingThread.reset();
-    lamdaTimer.reset();
 }
 
 void Renderer::paint(Graphics& g)
 {
-    DBG("[Renderer] painting: " << Time::getCurrentTime().toISO8601(true) << "\n");
-    g.drawImage(firstImage ? imageToRender[0] : imageToRender[1], getLocalBounds().toFloat());
+//    DBG("[Renderer] painting: " << Time::getCurrentTime().toISO8601(true) << "\n");
+//    g.drawImage(firstImage.get() ? imageToRender[0] : imageToRender[1], getLocalBounds().toFloat());
+    g.drawImage(imageToRender.read(), getLocalBounds().toFloat());
 }
 
-void Renderer::handleAsyncUpdate()
+void Renderer::timerCallback()
 {
     repaint();
 }
@@ -137,15 +148,15 @@ void Renderer::handleAsyncUpdate()
 void DualButton::resized()
 {
     auto bounds = getLocalBounds();
-    DBG(bounds.toString());
+//    DBG(bounds.toString());
     bounds = bounds.removeFromLeft(100);
-    DBG(bounds.toString());
+//    DBG(bounds.toString());
     button1.setBounds(bounds);
 
     bounds = getLocalBounds().removeFromRight(100);
     bounds.setX(bounds.getX() - 5);
     
-    DBG(bounds.toString());
+//    DBG(bounds.toString());
     
     button2.setBounds(bounds);
 }
@@ -219,7 +230,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(repeatingThing);
     addAndMakeVisible(hiResGui);
     
-//    addAndMakeVisible(renderer);
+    addAndMakeVisible(renderer);
     
     setSize (800, 400);
 }
@@ -258,6 +269,6 @@ void MainComponent::resized()
     
     hiResGui.setBounds(repeatingThing.getBounds().withX(repeatingThing.getRight() + 5).withWidth(100) );
     
-//    renderer.setBounds(hiResGui.getBounds().withX(hiResGui.getRight() + 5).withWidth(100) );
+    renderer.setBounds(hiResGui.getBounds().withX(hiResGui.getRight() + 5).withWidth(100) );
                              
 }

@@ -66,3 +66,21 @@ void B::run()
         wait(3);
     }
 }
+
+void LockingStuct::threadAFunc()
+{
+    {
+        const ScopedLock sl(criticalSection);
+        dataMember = 2;
+    }
+    std::cout << "thread A Func " << dataMember << std::endl;
+}
+
+void LockingStuct::threadBFunc()
+{
+    {
+        const ScopedLock sl(criticalSection);
+        dataMember = 0;
+    }
+    std::cout << "thread B Func " << dataMember << std::endl;
+}

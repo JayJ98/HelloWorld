@@ -9,16 +9,17 @@ using namespace juce;
 //====================================================
 struct ImageProcessingThread : Thread
 {
-    ImageProcessingThread(int w_, int h_);
+    using ImagePassingFunc = std::function<void(Image, ImageProcessingThread&)>;
+    ImageProcessingThread(int w_, int h_, ImagePassingFunc f);
     ~ImageProcessingThread();
     void run() override;
     
-    void setUpdateRendererFunc( std::function<void(Image&&)> f );
+//    void setUpdateRendererFunc( std::function<void(Image&&)> f );
     
 private:
     int w {0};
     int h {0};
-    std::function<void(Image&&)> updateRenderer;
+    ImagePassingFunc updateRenderer;
     Random r;
     
 };
@@ -33,19 +34,45 @@ struct LambdaTimer : Timer
 private:
     std::function<void()> lambda;
 };
+
 #include <array>
 
-struct Renderer : Component, AsyncUpdater
+//====================================================
+template<int Max>
+struct ImageBuffer
+{
+    void push(Image image)
+    {
+        const ScopedWriteLock swl(readWriteLock);
+        images[(++index) % Max] = image;
+    }
+    Image read()
+    {
+        const ScopedReadLock srl(readWriteLock);
+        return images[index % Max];
+    }
+private:
+    ReadWriteLock readWriteLock;
+    size_t index = 0;
+    std::array<Image, Max> images;
+};
+
+
+
+//====================================================
+
+struct Renderer : Component, Timer
 {
     Renderer();
     ~Renderer();
     void paint(Graphics& g) override;
-    void handleAsyncUpdate() override;
+    void timerCallback() override;
 private:
     std::unique_ptr<ImageProcessingThread> processingThread;
     std::unique_ptr<LambdaTimer> lamdaTimer;
-    bool firstImage = true;
-    std::array<Image, 2> imageToRender;
+//    Atomic<bool> firstImage {true};
+//    std::array<Image, 2> imageToRender;
+    ImageBuffer<5> imageToRender;
 };
 
 //====================================================
@@ -228,7 +255,7 @@ private:
     RepeatingThing repeatingThing;
     DualButton dualButton; //{repeatingThing};
     MyAsyncHighResGui hiResGui;
-//    Renderer renderer;
+    Renderer renderer;
     
     Test test;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
