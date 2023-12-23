@@ -70,10 +70,19 @@ struct Renderer : Component, Timer
 private:
     std::unique_ptr<ImageProcessingThread> processingThread;
     std::unique_ptr<LambdaTimer> lamdaTimer;
-//    Atomic<bool> firstImage {true};
-//    std::array<Image, 2> imageToRender;
     ImageBuffer<5> imageToRender;
 };
+
+//====================================================
+struct Renderer2 : Component{
+    Renderer2();
+    void paint(Graphics& g) override;
+private:
+    void loop();
+    ImageBuffer<5> imageToRender;
+    
+};
+
 
 //====================================================
 
@@ -257,6 +266,7 @@ private:
     MyAsyncHighResGui hiResGui;
     Renderer renderer;
     
+    Renderer2 renderer2;
     Test test;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

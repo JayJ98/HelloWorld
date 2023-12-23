@@ -36,20 +36,8 @@ void ImageProcessingThread::run()
         
         auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
         
-//        if( threadShouldExit() ) { break; }
-        
-//        if( threadShouldExit() ) { break; }
-        
-//        DBG("[ImageProcessingThread] generating random image " << Time::getCurrentTime().toISO8601(true));
-        
-//        bool shouldBail = false;
-        
         for (int x = 0; x < w; ++x) {
-//            if( threadShouldExit() )
-//            {
-//                shouldBail = true;
-//                break;
-//            }
+
             
             for (int y = 0; y < h; ++y)
             {
@@ -63,7 +51,6 @@ void ImageProcessingThread::run()
             }
         }
         
-//        if( threadShouldExit() || shouldBail) { break; }
         
         if( updateRenderer)
         {
@@ -72,11 +59,6 @@ void ImageProcessingThread::run()
         wait( -1 );
     }
 }
-
-//void ImageProcessingThread::setUpdateRendererFunc( std::function<void(Image&&)> f )
-//{
-//    updateRenderer = std::move(f);
-//}
 
 //=======================================================================================
 
@@ -106,13 +88,9 @@ Renderer::Renderer()
                                             [this](Image image,
                                                    ImageProcessingThread& thread)
                                                {
-//            bool whichIndex = firstImage.get();
-//            int renderIndex = whichIndex ? 0 : 1;
-//            firstImage = !whichIndex;
-//            imageToRender[renderIndex] = image;
+
             imageToRender.push(image);
-//            triggerAsyncUpdate();
-            
+
             if( !thread.threadShouldExit() )
             {
                 lamdaTimer = std::make_unique<LambdaTimer>(1000, [this](){
@@ -133,14 +111,71 @@ Renderer::~Renderer()
 
 void Renderer::paint(Graphics& g)
 {
-//    DBG("[Renderer] painting: " << Time::getCurrentTime().toISO8601(true) << "\n");
-//    g.drawImage(firstImage.get() ? imageToRender[0] : imageToRender[1], getLocalBounds().toFloat());
     g.drawImage(imageToRender.read(), getLocalBounds().toFloat());
 }
 
 void Renderer::timerCallback()
 {
     repaint();
+}
+//=======================================================================================
+
+Renderer2::Renderer2()
+{
+    Timer::callAfterDelay(10, [this]() 
+                          {
+        SafePointer<Renderer2> safePtr(this);
+        if( safePtr.getComponent() )
+            safePtr->loop();
+        loop();
+    });
+}
+
+void Renderer2::paint(Graphics& g)
+{
+    g.drawImage(imageToRender.read(), getLocalBounds().toFloat());
+}
+
+void Renderer2::loop()
+{
+    auto w = getWidth();
+    auto h = getHeight();
+    Thread::launch([w, h, this]()
+    {
+        Random r;
+        auto canvas = Image(Image::PixelFormat::RGB, w, h, true);
+        
+        for (int x = 0; x < w; ++x) {
+
+            
+            for (int y = 0; y < h; ++y)
+            {
+                canvas.setPixelAt(x,
+                                  y,
+                                  Colour(
+                                         r.nextInt(),
+                                         r.nextFloat(),
+                                         r.nextFloat(),
+                                         1.f ) );
+            }
+        }
+        SafePointer<Renderer2> safePtr(this);
+        if( safePtr.getComponent() )
+            safePtr-> imageToRender.push(canvas);
+        
+        Timer::callAfterDelay(10, [this]()
+                              {
+            SafePointer<Renderer2> safePtr(this);
+            if( safePtr.getComponent() )
+                safePtr->repaint();
+        });
+        Timer::callAfterDelay(1000, [this]()
+                              {
+            SafePointer<Renderer2> safePtr(this);
+            if( safePtr.getComponent() )
+                safePtr->loop();
+        });
+    });
 }
 //=======================================================================================
 
@@ -232,7 +267,9 @@ MainComponent::MainComponent()
     
     addAndMakeVisible(renderer);
     
-    setSize (800, 400);
+    addAndMakeVisible(renderer2);
+    
+    setSize (800, 600);
 }
 
 MainComponent::~MainComponent()
@@ -270,5 +307,7 @@ void MainComponent::resized()
     hiResGui.setBounds(repeatingThing.getBounds().withX(repeatingThing.getRight() + 5).withWidth(100) );
     
     renderer.setBounds(hiResGui.getBounds().withX(hiResGui.getRight() + 5).withWidth(100) );
+    
+    renderer2.setBounds(renderer.getBounds().withX(renderer.getRight() + 5).withWidth(100) );
                              
 }
